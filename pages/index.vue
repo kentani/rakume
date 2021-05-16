@@ -446,7 +446,7 @@ export default {
         type: "application/json"
       })
 
-      saveAs(blob, "answer_log.json")
+      saveAs(blob, "resume.json")
     },
     captureImage () {
       this.$html2canvas(document.querySelector('#capture')).then((canvas) => {
