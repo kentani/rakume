@@ -23,8 +23,8 @@
     </v-card-text>
     <v-card-actions>
       <v-spacer />
-      <v-btn text @click="closeSkillModal">close</v-btn>
-      <v-btn text @click="saveSkillModal">save</v-btn>
+      <v-btn rounded text @click="closeSkillModal">close</v-btn>
+      <v-btn rounded text @click="saveSkillModal">save</v-btn>
     </v-card-actions>
   </v-card>
 </template>

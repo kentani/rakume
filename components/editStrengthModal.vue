@@ -18,8 +18,8 @@
     </v-card-text>
     <v-card-actions>
       <v-spacer />
-      <v-btn text @click="closeStrengthModal">close</v-btn>
-      <v-btn text @click="saveStrengthModal">save</v-btn>
+      <v-btn rounded text @click="closeStrengthModal">close</v-btn>
+      <v-btn rounded text @click="saveStrengthModal">save</v-btn>
     </v-card-actions>
   </v-card>
 </template>

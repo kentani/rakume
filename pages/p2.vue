@@ -2,7 +2,31 @@
   <div>
     <v-row justify="center" class="mb-6">
       <v-card tile width="1000">
+        <v-card-actions class="pb-0">
+          <span class="body-2 font-weight-bold ml-1 mr-2 pt-1">一括設定</span>
+          <v-file-input
+            hide-details
+            class="mt-0 mb-2"
+            label="jsonファイル取り込み"
+            :color="color"
+            :disabled="isPreview"
+            @change="getFileContent"
+          />
+          <v-btn
+            rounded
+            depressed
+            class="mx-2"
+            :dark="!isPreview && !!json"
+            :color="color"
+            :disabled="isPreview || !json"
+            :ripple="false"
+            @click="importJson"
+          >
+            反映する
+          </v-btn>
+        </v-card-actions>
         <v-card-actions>
+          <span class="body-2 font-weight-bold ml-1 mr-2">テーマ</span>
           <v-btn
             v-for="colorName in colorList" :key="colorName"
             fab
@@ -10,31 +34,43 @@
             depressed
             :ripple="false"
             :color="colorName"
-            @click="changeColor(colorName)">
+            @click="changeColor(colorName)"
+          >
             <v-icon v-if="color == colorName" color="white">mdi-check</v-icon>
           </v-btn>
           <v-spacer />
+          <span class="body-2 font-weight-bold ml-1 mr-2 pt-1">プレビュー</span>
           <v-switch
             v-model="isPreview"
             inset
             hide-details
-            class="my-2"
-            :color="color">
-            <template v-slot:label>
-              <span
-                class="overline font-weight-bold"
-                :class="[ isPreview ? setColorText(color) : 'grey--text' ]">
-                プレビュー
-              </span>
-            </template>
-          </v-switch>
+            class="ma-2"
+            :color="color"
+          />
+          <span class="body-2 font-weight-bold ml-1 mr-2 pt-1">ダウンロード</span>
           <v-btn
-            icon
-            x-large
+            rounded
+            depressed
+            class="mx-2"
+            :dark="!isPreview"
+            :color="color"
+            :disabled="isPreview"
+            :ripple="false"
+            @click="downloadJson"
+          >
+            設定ファイル
+          </v-btn>
+          <v-btn
+            rounded
+            depressed
+            class="mx-2"
+            :dark="isPreview"
+            :color="color"
             :disabled="!isPreview"
             :ripple="false"
-            @click="captureImage">
-            <v-icon :color="color">mdi-download</v-icon>
+            @click="captureImage"
+          >
+            RESUME
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -56,15 +92,15 @@
                         absolute
                         opacity="0.2"
                       >
-                        <v-btn rounded class="mx-2" @click="openNameModal">編集する</v-btn>
-                        <v-btn rounded class="mx-2" @click="deleteName">削除する</v-btn>
+                        <v-btn rounded depressed class="mx-2" @click="openNameModal">編集する</v-btn>
+                        <v-btn rounded depressed class="mx-2" @click="deleteName">削除する</v-btn>
                       </v-overlay>
                     </v-fade-transition>
                   </v-card>
                   <v-card v-else flat class="mb-6" style="background-color: #EEEEEE; border: 2px solid; border-radius: 50px;">
                     <v-card-text>
                       <v-row justify="center" class="body-2 grey--text text--darken-1 pa-4">
-                        <v-btn v-if="!isPreview" rounded dark :color="color" @click="openNameModal">＋名前を追加する</v-btn>
+                        <v-btn v-if="!isPreview" rounded depressed dark :color="color" @click="openNameModal">＋名前を追加する</v-btn>
                       </v-row>
                     </v-card-text>
                   </v-card>
@@ -94,15 +130,15 @@
                         absolute
                         opacity="0.2"
                       >
-                        <v-btn rounded class="mx-2" @click="openHobbyModal">編集する</v-btn>
-                        <v-btn rounded class="mx-2" @click="deleteHobby">削除する</v-btn>
+                        <v-btn rounded depressed class="mx-2" @click="openHobbyModal">編集する</v-btn>
+                        <v-btn rounded depressed class="mx-2" @click="deleteHobby">削除する</v-btn>
                       </v-overlay>
                     </v-fade-transition>
                   </v-card>
                   <v-card v-else tile flat style="background-color: #EEEEEE;">
                     <v-card-text>
-                      <v-row justify="center" class="body-2 grey--text text--darken-1">
-                        <v-btn v-if="!isPreview" rounded dark :color="color" @click="openHobbyModal">＋趣味を追加する</v-btn>
+                      <v-row justify="center" class="body-2 grey--text text--darken-1 pa-4">
+                        <v-btn v-if="!isPreview" rounded depressed dark :color="color" @click="openHobbyModal">＋趣味を追加する</v-btn>
                       </v-row>
                     </v-card-text>
                   </v-card>
@@ -143,8 +179,8 @@
                         absolute
                         opacity="0.2"
                       >
-                        <v-btn rounded class="mx-2" @click="openSkillModal(i)">編集する</v-btn>
-                        <v-btn rounded class="mx-2" @click="deleteSkill(i)">削除する</v-btn>
+                        <v-btn rounded depressed class="mx-2" @click="openSkillModal(i)">編集する</v-btn>
+                        <v-btn rounded depressed class="mx-2" @click="deleteSkill(i)">削除する</v-btn>
                       </v-overlay>
                     </v-fade-transition>
                   </v-card>
@@ -164,8 +200,8 @@
               </v-dialog>
               <v-card v-if="!isPreview" tile flat style="background-color: #EEEEEE;">
                 <v-card-text>
-                  <v-row justify="center" class="body-2 grey--text text--darken-1">
-                    <v-btn rounded dark :color="color" @click="openSkillModal(skills.length + 1)">＋スキルを追加する</v-btn>
+                  <v-row justify="center" class="body-2 grey--text text--darken-1 pa-4">
+                    <v-btn rounded depressed dark :color="color" @click="openSkillModal(skills.length + 1)">＋スキルを追加する</v-btn>
                   </v-row>
                 </v-card-text>
               </v-card>
@@ -184,15 +220,15 @@
                         absolute
                         opacity="0.2"
                       >
-                        <v-btn rounded class="mx-2" @click="openProfileModal">編集する</v-btn>
-                        <v-btn rounded class="mx-2" @click="deleteProfile">削除する</v-btn>
+                        <v-btn rounded depressed class="mx-2" @click="openProfileModal">編集する</v-btn>
+                        <v-btn rounded depressed class="mx-2" @click="deleteProfile">削除する</v-btn>
                       </v-overlay>
                     </v-fade-transition>
                   </v-card>
                   <v-card v-else tile flat :color="color" style="white-space: pre-line;">
                     <v-card-text>
-                      <v-row justify="center" class="body-2 grey--text text--darken-1">
-                        <v-btn v-if="!isPreview" rounded color="grey lighten-3" @click="openProfileModal">＋プロフィールを追加する</v-btn>
+                      <v-row justify="center" class="body-2 grey--text text--darken-1 pa-4">
+                        <v-btn v-if="!isPreview" rounded depressed color="grey lighten-3" @click="openProfileModal">＋プロフィールを追加する</v-btn>
                       </v-row>
                     </v-card-text>
                   </v-card>
@@ -224,15 +260,15 @@
                         v-if="!isPreview && hover"
                         absolute
                         opacity="0.2">
-                        <v-btn rounded class="mx-2" @click="openStrengthModal">編集する</v-btn>
-                        <v-btn rounded class="mx-2" @click="deleteStrength">削除する</v-btn>
+                        <v-btn rounded depressed class="mx-2" @click="openStrengthModal">編集する</v-btn>
+                        <v-btn rounded depressed class="mx-2" @click="deleteStrength">削除する</v-btn>
                       </v-overlay>
                     </v-fade-transition>
                   </v-card>
                   <v-card v-else tile flat :color="color" style="white-space: pre-line;">
                     <v-card-text>
-                      <v-row justify="center" class="body-2 grey--text text--darken-1">
-                        <v-btn v-if="!isPreview" rounded color="grey lighten-3" @click="openStrengthModal">＋強みを追加する</v-btn>
+                      <v-row justify="center" class="body-2 grey--text text--darken-1 pa-4">
+                        <v-btn v-if="!isPreview" rounded depressed color="grey lighten-3" @click="openStrengthModal">＋強みを追加する</v-btn>
                       </v-row>
                     </v-card-text>
                   </v-card>
@@ -277,8 +313,8 @@
                           v-if="!isPreview && hover"
                           absolute
                           opacity="0.2">
-                          <v-btn rounded class="mx-2" @click="openExperienceModal(i)">編集する</v-btn>
-                          <v-btn rounded class="mx-2" @click="deleteExperience(i)">削除する</v-btn>
+                          <v-btn rounded depressed class="mx-2" @click="openExperienceModal(i)">編集する</v-btn>
+                          <v-btn rounded depressed class="mx-2" @click="deleteExperience(i)">削除する</v-btn>
                         </v-overlay>
                       </v-fade-transition>
                     </v-card>
@@ -297,8 +333,8 @@
               </v-dialog>
               <v-card v-if="!isPreview" tile flat :color="color">
                 <v-card-text>
-                  <v-row justify="center" class="body-2 grey--text text--darken-1">
-                    <v-btn rounded color="grey lighten-3" @click="openExperienceModal(experiences.length + 1)">＋経歴を追加する</v-btn>
+                  <v-row justify="center" class="body-2 grey--text text--darken-1 pa-4">
+                    <v-btn rounded depressed color="grey lighten-3" @click="openExperienceModal(experiences.length + 1)">＋経歴を追加する</v-btn>
                   </v-row>
                 </v-card-text>
               </v-card>
@@ -309,8 +345,11 @@
     </v-row>
   </div>
 </template>
+
 <script>
 import editSkillModal from '../components/editSkillModal.vue'
+import { saveAs } from "file-saver"
+
 export default {
   components: { editSkillModal },
   data () {
@@ -322,6 +361,7 @@ export default {
       profileModal: false,
       strengthModal: false,
       experienceModal: false,
+      json: null,
       name: "",
       hobby: "",
       skills: [],
@@ -346,6 +386,68 @@ export default {
     }
   },
   methods: {
+    async getFileContent (file) {
+      if (!file) {
+        this.json = null
+        return
+      }
+
+      if (!this.checkFile(file)) {
+        alert("ファイルを読み込めませんでした")
+        return
+      }
+
+      try {
+        const body = await this.readFileAsync(file)
+        this.json = JSON.parse(body)
+      } catch (e) {
+        console.log(e)
+      }
+    },
+    readFileAsync (file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => {
+          resolve(reader.result)
+        }
+        reader.onerror = reject
+        reader.readAsText(file)
+      })
+    },
+    checkFile(file) {
+      if (file.type !== 'application/json') {
+        return false
+      }
+
+      const SIZE_LIMIT = 5000000 // 5MB
+      if (file.size > SIZE_LIMIT) {
+        return false
+      }
+      return true
+    },
+    importJson() {
+      this.name = this.json.name
+      this.hobby = this.json.hobby
+      this.skills = this.json.skills
+      this.profile = this.json.profile
+      this.strength = this.json.strength
+      this.experiences = this.json.experiences
+    },
+    downloadJson() {
+      const resume = {
+        "name": this.name,
+        "hobby": this.hobby,
+        "skills": this.skills,
+        "profile": this.profile,
+        "strength": this.strength,
+        "experiences": this.experiences,
+      }
+      const blob = new Blob([JSON.stringify(resume)], {
+        type: "application/json"
+      })
+
+      saveAs(blob, "answer_log.json")
+    },
     captureImage () {
       this.$html2canvas(document.querySelector('#capture')).then((canvas) => {
         const link = document.createElement('a')

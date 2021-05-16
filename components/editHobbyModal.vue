@@ -13,8 +13,8 @@
     </v-card-text>
     <v-card-actions>
       <v-spacer />
-      <v-btn text @click="closeHobbyModal">close</v-btn>
-      <v-btn text @click="saveHobbyModal">save</v-btn>
+      <v-btn rounded text @click="closeHobbyModal">close</v-btn>
+      <v-btn rounded text @click="saveHobbyModal">save</v-btn>
     </v-card-actions>
   </v-card>
 </template>
