@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-row justify="center" class="mb-6">
-      <v-card tile width="1000">
+      <v-card tile width="1000" max-width="1000">
         <v-card-actions class="pb-0">
           <span class="body-2 font-weight-bold ml-1 mr-2 pt-1">一括設定</span>
           <v-file-input

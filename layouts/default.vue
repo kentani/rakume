@@ -1,8 +1,8 @@
 <template>
-  <v-app dark>
-    <v-app-bar app flat dense>
+  <v-app style="background: #F5F5F5">
+    <v-app-bar app flat dense color="green lighten-2">
       <v-toolbar-title>
-        <span class="font-weight-bold">RAKUME</span><span class="body-2 font-weight-bold"> 〜 ラクミー 〜</span>
+        <span class="title font-weight-bold white--text">RAKUME</span><span class="body-2 font-weight-bold white--text"> 〜 ラクミー 〜</span>
       </v-toolbar-title>
     </v-app-bar>
     <v-main class="my-4">
