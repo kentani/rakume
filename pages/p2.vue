@@ -2,15 +2,7 @@
   <div>
     <v-row justify="center" class="mb-6">
       <v-card tile width="1000">
-        <v-card-actions class="px-0">
-          <v-btn
-            v-show="!isPreview"
-            icon
-            x-large
-            :ripple="false"
-            @click="settingDialog = true">
-            <v-icon :color="color">mdi-square-edit-outline</v-icon>
-          </v-btn>
+        <v-card-actions>
           <v-btn
             v-for="colorName in colorList" :key="colorName"
             fab
@@ -22,10 +14,24 @@
             <v-icon v-if="color == colorName" color="white">mdi-check</v-icon>
           </v-btn>
           <v-spacer />
+          <v-switch
+            v-model="isPreview"
+            inset
+            hide-details
+            class="my-2"
+            :color="color">
+            <template v-slot:label>
+              <span
+                class="overline font-weight-bold"
+                :class="[ isPreview ? setColorText(color) : 'grey--text' ]">
+                プレビュー
+              </span>
+            </template>
+          </v-switch>
           <v-btn
-            v-show="!isPreview"
             icon
             x-large
+            :disabled="!isPreview"
             :ripple="false"
             @click="captureImage">
             <v-icon :color="color">mdi-download</v-icon>
@@ -40,44 +46,88 @@
             <v-col cols="5" style="background-color: #EEEEEE; min-height: 100%;">
               <v-hover>
                 <template v-slot:default="{ hover }">
-                  <v-card flat class="mb-6" style="background-color: #EEEEEE; border: 2px solid; border-radius: 50px;">
+                  <v-card v-if="name" flat class="mb-6" style="background-color: #EEEEEE; border: 2px solid; border-radius: 50px;">
                     <v-card-text>
                       <h2 class="display-1 grey--text text--darken-2 text-center font-weight-bold mb-0">{{ name }}</h2>
                     </v-card-text>
                     <v-fade-transition>
                       <v-overlay
-                        v-if="hover"
-                        absolute>
-                        <v-btn rounded>編集する</v-btn>
+                        v-if="!isPreview && hover"
+                        absolute
+                        opacity="0.2"
+                      >
+                        <v-btn rounded class="mx-2" @click="openNameModal">編集する</v-btn>
+                        <v-btn rounded class="mx-2" @click="deleteName">削除する</v-btn>
                       </v-overlay>
                     </v-fade-transition>
                   </v-card>
+                  <v-card v-else flat class="mb-6" style="background-color: #EEEEEE; border: 2px solid; border-radius: 50px;">
+                    <v-card-text>
+                      <v-row justify="center" class="body-2 grey--text text--darken-1 pa-4">
+                        <v-btn v-if="!isPreview" rounded dark :color="color" @click="openNameModal">＋名前を追加する</v-btn>
+                      </v-row>
+                    </v-card-text>
+                  </v-card>
                 </template>
               </v-hover>
+              <v-dialog
+                v-model="nameModal"
+                width="600"
+              >
+                <edit-name-modal
+                  :name="this.name"
+                  :color="color"
+                  @handleEditNameClosed="editNameClosed"
+                  @handleEditNameSaved="editNameSaved"
+                />
+              </v-dialog>
               <h3 class="title grey--text text--darken-2 font-weight-bold mb-0">HOBBY</h3>
               <v-hover>
                 <template v-slot:default="{ hover }">
-                  <v-card tile flat style="background-color: #EEEEEE; white-space: pre-line;">
+                  <v-card v-if="hobby" tile flat style="background-color: #EEEEEE; white-space: pre-line;">
                     <v-card-text class="body-2 grey--text text--darken-1 pa-2">
                       <p class="mb-0">{{ hobby }}</p>
                     </v-card-text>
                     <v-fade-transition>
                       <v-overlay
-                        v-if="hover"
+                        v-if="!isPreview && hover"
                         absolute
-                        opacity="0.2">
-                        <v-btn rounded>編集する</v-btn>
+                        opacity="0.2"
+                      >
+                        <v-btn rounded class="mx-2" @click="openHobbyModal">編集する</v-btn>
+                        <v-btn rounded class="mx-2" @click="deleteHobby">削除する</v-btn>
                       </v-overlay>
                     </v-fade-transition>
                   </v-card>
+                  <v-card v-else tile flat style="background-color: #EEEEEE;">
+                    <v-card-text>
+                      <v-row justify="center" class="body-2 grey--text text--darken-1">
+                        <v-btn v-if="!isPreview" rounded dark :color="color" @click="openHobbyModal">＋趣味を追加する</v-btn>
+                      </v-row>
+                    </v-card-text>
+                  </v-card>
                 </template>
               </v-hover>
+              <v-dialog
+                v-model="hobbyModal"
+                width="600"
+              >
+                <edit-hobby-modal
+                  :hobby="hobby"
+                  :color="color"
+                  @handleEditHobbyClosed="editHobbyClosed"
+                  @handleEditHobbySaved="editHobbySaved"
+                />
+              </v-dialog>
               <v-divider class="mt-3 mb-6" style="border: 1px solid black; border-color: black;" />
               <h3 class="title grey--text text--darken-2 font-weight-bold mb-0">SKILLS</h3>
+              <div
+                v-for="(skill, i) in skills"
+                :key="skill.item">
               <v-hover>
                 <template v-slot:default="{ hover }">
                   <v-card tile flat style="background-color: #EEEEEE;">
-                    <v-card-actions class="body-2 grey--text text--darken-1" v-for="skill in skills" :key="skill.item">
+                    <v-card-actions class="body-2 grey--text text--darken-1">
                       <span>{{ skill.item }}</span>
                       <v-spacer />
                       <v-rating
@@ -89,40 +139,81 @@
                     </v-card-actions>
                     <v-fade-transition>
                       <v-overlay
-                        v-if="hover"
+                        v-if="!isPreview && hover"
                         absolute
-                        opacity="0.2">
-                        <v-btn rounded>編集する</v-btn>
+                        opacity="0.2"
+                      >
+                        <v-btn rounded class="mx-2" @click="openSkillModal(i)">編集する</v-btn>
+                        <v-btn rounded class="mx-2" @click="deleteSkill(i)">削除する</v-btn>
                       </v-overlay>
                     </v-fade-transition>
                   </v-card>
                 </template>
               </v-hover>
+              </div>
+              <v-dialog
+                v-model="skillModal"
+                width="600"
+              >
+                <edit-skill-modal
+                  :skill="skill"
+                  :color="color"
+                  @handleEditSkillClosed="editSkillClosed"
+                  @handleEditSkillSaved="editSkillSaved"
+                />
+              </v-dialog>
+              <v-card v-if="!isPreview" tile flat style="background-color: #EEEEEE;">
+                <v-card-text>
+                  <v-row justify="center" class="body-2 grey--text text--darken-1">
+                    <v-btn rounded dark :color="color" @click="openSkillModal(skills.length + 1)">＋スキルを追加する</v-btn>
+                  </v-row>
+                </v-card-text>
+              </v-card>
             </v-col>
             <v-col cols="7" style="min-height: 100%;">
               <h3 class="title font-weight-bold white--text mb-0">PROFILE</h3>
               <v-hover>
                 <template v-slot:default="{ hover }">
-                  <v-card tile flat :color="color" style="white-space: pre-line;">
+                  <v-card v-if="profile" tile flat :color="color" style="white-space: pre-line;">
                     <v-card-text class="body-2 white--text pa-2">
                       <p class="mb-0">{{ profile }}</p>
                     </v-card-text>
                     <v-fade-transition>
                       <v-overlay
-                        v-if="hover"
+                        v-if="!isPreview && hover"
                         absolute
-                        opacity="0.2">
-                        <v-btn rounded>編集する</v-btn>
+                        opacity="0.2"
+                      >
+                        <v-btn rounded class="mx-2" @click="openProfileModal">編集する</v-btn>
+                        <v-btn rounded class="mx-2" @click="deleteProfile">削除する</v-btn>
                       </v-overlay>
                     </v-fade-transition>
                   </v-card>
+                  <v-card v-else tile flat :color="color" style="white-space: pre-line;">
+                    <v-card-text>
+                      <v-row justify="center" class="body-2 grey--text text--darken-1">
+                        <v-btn v-if="!isPreview" rounded color="grey lighten-3" @click="openProfileModal">＋プロフィールを追加する</v-btn>
+                      </v-row>
+                    </v-card-text>
+                  </v-card>
                 </template>
               </v-hover>
+              <v-dialog
+                v-model="profileModal"
+                width="600"
+              >
+                <edit-profile-modal
+                  :profile="profile"
+                  :color="color"
+                  @handleEditProfileClosed="editProfileClosed"
+                  @handleEditProfileSaved="editProfileSaved"
+                />
+              </v-dialog>
               <v-divider class="mt-3 mb-6" style="border: 1px solid white; border-color: white;" />
               <h3 class="title font-weight-bold white--text mb-0">STRENGTH</h3>
               <v-hover>
                 <template v-slot:default="{ hover }">
-                  <v-card tile flat :color="color" style="white-space: pre-line;">
+                  <v-card v-if="strength.length > 0" tile flat :color="color" style="white-space: pre-line;">
                     <v-card-text class="body-2 white--text pa-2">
                       <v-chip v-for="(strength, i) in strength" :key="i" class="mx-1" color="grey lighten-3">
                         <span class="body-2 grey--text text--darken-2">{{ i + 1 }}. {{ strength }}</span>
@@ -130,87 +221,117 @@
                     </v-card-text>
                     <v-fade-transition>
                       <v-overlay
-                        v-if="hover"
+                        v-if="!isPreview && hover"
                         absolute
                         opacity="0.2">
-                        <v-btn rounded>編集する</v-btn>
+                        <v-btn rounded class="mx-2" @click="openStrengthModal">編集する</v-btn>
+                        <v-btn rounded class="mx-2" @click="deleteStrength">削除する</v-btn>
                       </v-overlay>
                     </v-fade-transition>
                   </v-card>
+                  <v-card v-else tile flat :color="color" style="white-space: pre-line;">
+                    <v-card-text>
+                      <v-row justify="center" class="body-2 grey--text text--darken-1">
+                        <v-btn v-if="!isPreview" rounded color="grey lighten-3" @click="openStrengthModal">＋強みを追加する</v-btn>
+                      </v-row>
+                    </v-card-text>
+                  </v-card>
                 </template>
               </v-hover>
+              <v-dialog
+                v-model="strengthModal"
+                width="600"
+              >
+                <edit-strength-modal
+                  :strengthList="strength"
+                  :color="color"
+                  @handleEditStrengthClosed="editStrengthClosed"
+                  @handleEditStrengthSaved="editStrengthSaved"
+                />
+              </v-dialog>
               <v-divider class="mt-3 mb-6" style="border: 1px solid white; border-color: white;" />
               <h3 class="title font-weight-bold white--text mb-0">EXPERIENCE</h3>
-              <v-hover>
-                <template v-slot:default="{ hover }">
-                  <v-card tile flat :color="color" style="white-space: pre-line;">
-                    <v-card-text class="body-2 white--text pa-2">
-                      <v-timeline dense>
-                        <v-timeline-item
-                          v-for="(experience, i) in experience"
-                          :key="i"
-                          :color="color"
-                          small
-                          right>
-                          <div>
-                            <div class="subtitle-2 white--text">{{ experience.period }}</div>
-                            <h2 class="subtitle-1 font-weight-bold white--text">{{ experience.project }}</h2>
-                            <div class="subtitle-2 white--text" style="white-space: pre-line;">{{ experience.content }}</div>
-                          </div>
-                        </v-timeline-item>
-                      </v-timeline>
-                    </v-card-text>
-                    <v-fade-transition>
-                      <v-overlay
-                        v-if="hover"
-                        absolute
-                        opacity="0.2">
-                        <v-btn rounded>編集する</v-btn>
-                      </v-overlay>
-                    </v-fade-transition>
-                  </v-card>
-                </template>
-              </v-hover>
+              <div
+                v-for="(experience, i) in experiences"
+                :key="i"
+              >
+                <v-hover>
+                  <template v-slot:default="{ hover }">
+                    <v-card tile flat :color="color" style="white-space: pre-line;">
+                      <v-card-text class="body-2 white--text pa-2">
+                        <v-timeline dense>
+                          <v-timeline-item
+                            :color="color"
+                            small
+                            right>
+                            <div>
+                              <div class="subtitle-2 white--text">{{ experience.period }}</div>
+                              <h2 class="subtitle-1 font-weight-bold white--text">{{ experience.project }}</h2>
+                              <div class="subtitle-2 white--text" style="white-space: pre-line;">{{ experience.content }}</div>
+                            </div>
+                          </v-timeline-item>
+                        </v-timeline>
+                      </v-card-text>
+                      <v-fade-transition>
+                        <v-overlay
+                          v-if="!isPreview && hover"
+                          absolute
+                          opacity="0.2">
+                          <v-btn rounded class="mx-2" @click="openExperienceModal(i)">編集する</v-btn>
+                          <v-btn rounded class="mx-2" @click="deleteExperience(i)">削除する</v-btn>
+                        </v-overlay>
+                      </v-fade-transition>
+                    </v-card>
+                  </template>
+                </v-hover>
+              </div>
+              <v-dialog
+                v-model="experienceModal"
+                width="600">
+                <edit-experience-modal
+                  :experience="experience"
+                  :color="color"
+                  @handleEditExperienceClosed="editExperienceClosed"
+                  @handleEditExperienceSaved="editExperienceSaved"
+                />
+              </v-dialog>
+              <v-card v-if="!isPreview" tile flat :color="color">
+                <v-card-text>
+                  <v-row justify="center" class="body-2 grey--text text--darken-1">
+                    <v-btn rounded color="grey lighten-3" @click="openExperienceModal(experiences.length + 1)">＋経歴を追加する</v-btn>
+                  </v-row>
+                </v-card-text>
+              </v-card>
             </v-col>
           </v-row>
         </v-card-text>
       </v-card>
     </v-row>
-    <v-dialog
-      v-model="settingDialog"
-      width="600">
-      <v-card>
-        <v-card-text>
-          <v-text-field
-            v-model="name"
-            label="NAME" />
-          <v-text-field
-            v-model="hobby"
-            label="HOBBY" />
-          <v-text-field
-            v-model="skills"
-            label="SKILLS" />
-          <v-textarea
-            v-model="profile"
-            label="PROFILE" />
-          <v-combobox
-            v-model="strength"
-            :items="strength"
-            hide-selected
-            label="STRENGTH"
-            multiple
-            chips />
-        </v-card-text>
-      </v-card>
-    </v-dialog>
   </div>
 </template>
 <script>
+import editSkillModal from '../components/editSkillModal.vue'
 export default {
+  components: { editSkillModal },
   data () {
     return {
-      fab: false,
-      settingDialog: false,
+      isPreview: false,
+      nameModal: false,
+      hobbyModal: false,
+      skillModal: false,
+      profileModal: false,
+      strengthModal: false,
+      experienceModal: false,
+      name: "",
+      hobby: "",
+      skills: [],
+      profile: "",
+      strength: [],
+      experiences: [],
+      skill: {},
+      skillIndex: null,
+      experience: {},
+      experienceIndex: null,
       color: "green lighten-2",
       colorList: [
         "green lighten-2",
@@ -219,22 +340,8 @@ export default {
         "purple lighten-2",
         "yellow darken-2",
         "brown lighten-2",
+        "grey darken-2",
         "grey darken-4"
-      ],
-      name: "山田 太郎",
-      hobby: "#プログラミング",
-      skills: [
-        { item: "Ruby", rating: 3 },
-        { item: "Ruby on Rails", rating: 4 },
-        { item: "Vue.js", rating: 2 },
-        { item: "Nuxt.js", rating: 2 },
-      ],
-      profile: "・要件定義からリリース、運用保守まで様々な工程での開発経験があります",
-      strength: [
-        "達成欲",
-      ],
-      experience: [
-        { period: "2021.01 - 現在", project: "○○システム開発", content: "機能開発、運用保守を行いました。" },
       ],
     }
   },
@@ -243,12 +350,101 @@ export default {
       this.$html2canvas(document.querySelector('#capture')).then((canvas) => {
         const link = document.createElement('a')
         link.href = canvas.toDataURL()
-        link.download = `resume.png`
+        link.download = "resume.png"
         link.click()
       })
     },
     changeColor(color) {
       this.color = color;
+    },
+    setColorText(color) {
+      const [ main, sub ] = color.split(" ")
+      return `${main}--text text--${sub}`
+    },
+    openNameModal() {
+      this.nameModal = true
+    },
+    editNameClosed() {
+      this.nameModal = false
+    },
+    editNameSaved(newName) {
+      this.name = newName
+      this.nameModal = false
+    },
+    deleteName() {
+      this.name = ""
+    },
+    openHobbyModal() {
+      this.hobbyModal = true
+    },
+    editHobbyClosed() {
+      this.hobbyModal = false
+    },
+    editHobbySaved(newHobby) {
+      this.hobby = newHobby
+      this.hobbyModal = false
+    },
+    deleteHobby() {
+      this.hobby = ""
+    },
+    openSkillModal(i) {
+      this.skillIndex = i
+      this.skill = Object.assign({}, this.skills[i])
+      this.skillModal = true
+    },
+    editSkillClosed() {
+      this.skillModal = false
+    },
+    editSkillSaved(newSkill) {
+      this.skill = newSkill
+      this.skills.splice(this.skillIndex, 1, newSkill)
+      this.skillModal = false
+    },
+    deleteSkill(i) {
+      this.skills.splice(i, 1)
+    },
+    openProfileModal() {
+      this.profileModal = true
+    },
+    editProfileClosed() {
+      this.profileModal = false
+    },
+    editProfileSaved(newProfile) {
+      this.profile = newProfile
+      this.profileModal = false
+    },
+    deleteProfile() {
+      this.profile = ""
+    },
+    openStrengthModal() {
+      this.tmpStrength = this.strength
+      this.strengthModal = true
+    },
+    editStrengthClosed() {
+      this.strengthModal = false
+    },
+    editStrengthSaved(newStrength) {
+      this.strength = newStrength
+      this.strengthModal = false
+    },
+    deleteStrength() {
+      this.strength = []
+    },
+    openExperienceModal(i) {
+      this.experienceIndex = i
+      this.experience = Object.assign({}, this.experiences[i])
+      this.experienceModal = true
+    },
+    editExperienceClosed() {
+      this.experienceModal = false
+    },
+    editExperienceSaved(newExperience) {
+      this.experience = newExperience
+      this.experiences.splice(this.experienceIndex, 1, newExperience)
+      this.experienceModal = false
+    },
+    deleteExperience(i) {
+      this.experiences.splice(i, 1)
     }
   }
 }
