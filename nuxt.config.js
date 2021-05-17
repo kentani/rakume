@@ -3,15 +3,37 @@ import colors from 'vuetify/es5/util/colors'
 export default {
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    titleTemplate: '%s - rakure',
-    title: 'rakure',
+    titleTemplate: '%s - RAKUME',
+    title: 'RAKUME',
     htmlAttrs: {
-      lang: 'en'
+      lang: 'ja'
     },
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { hid: 'description', name: 'description', content: '' }
+      { hid: 'description', name: 'description', content: 'Resumeを簡単に作成できるウェブアプリです。' },
+      { hid: 'og:type', property: 'og:type', content: 'website' },
+      {
+        hid: 'og:title',
+        property: 'og:title',
+        content: 'RAKUME'
+      },
+      {
+        hid: 'og:url',
+        property: 'og:url',
+        content: 'https://rakume.netlify.app'
+      },
+      {
+        hid: 'og:description',
+        property: 'og:description',
+        content: 'Resumeを簡単に作成できるウェブアプリです。'
+      },
+      {
+        hid: 'og:image',
+        property: 'og:image',
+        content: 'https://rakume.netlify.app/rakume.png'
+      },
+      { hid: 'og:site_name', name: 'og:site_name', content: 'RAKUME' }
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
@@ -69,4 +91,10 @@ export default {
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
   },
+
+  target: 'static',
+
+  generate: {
+    subFolders: false
+  }
 }
