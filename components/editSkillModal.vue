@@ -5,7 +5,7 @@
     </v-card-title>
     <v-card-text class="pb-0">
       <v-card-actions
-        class="body-2 grey--text text--darken-1">
+        class="body-2 grey--text text--darken-1 px-0">
         <v-text-field
           v-model="skillItem"
           label="スキル名"
